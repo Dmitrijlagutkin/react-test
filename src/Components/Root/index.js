@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { useQuery } from '@apollo/client'
@@ -23,7 +23,24 @@ function Root() {
   ])
 
   const [value, setValue] = useState('')
-  const { data, loading } = useQuery(postsQuery)
+  const [totalAmount, setTotalAmount] = useState(0)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const { data, loading } = useQuery(postsQuery, { variables: { page, limit } })
+
+  useEffect(() => {
+    setTotalAmount(data?.posts?.meta?.totalCount)
+  }, [data])
+
+  function handlePrev() {
+    setPage(page - 1)
+  }
+  function handleNext() {
+    setPage(page + 1)
+  }
+
+  console.log('totalAmount', totalAmount)
+  console.log('data', data)
 
   function handlePush() {
     setFields([{ name: faker.name.findName(), id: nanoid() }, ...fields])
@@ -44,15 +61,23 @@ function Root() {
         {loading
           ? 'Loading...'
           : posts.map(post => (
-              <Post mx={4}>
+              <Post mx={4} key={post.id} id={post.Id}>
                 <NavLink href={POST(post.id)} to={POST(post.id)}>
                   {post.title}
                 </NavLink>
+                <h1>{post.id}</h1>
                 <PostAuthor>by {post.user.name}</PostAuthor>
                 <PostBody>{post.body}</PostBody>
               </Post>
             ))}
-        <div>Pagination here</div>
+        <div>
+          <button type="button" onClick={handlePrev}>
+            prev
+          </button>
+          <button type="button" onClick={handleNext}>
+            next
+          </button>
+        </div>
       </Column>
       <Column>
         <h4>Slow rendering</h4>
