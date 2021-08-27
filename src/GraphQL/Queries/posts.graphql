@@ -1,6 +1,7 @@
 #import "GraphQL/Fragments/BasePost.graphql"
 #import "GraphQL/Fragments/PageMetadata.graphql"
 
+
 query Posts($page: Int, $limit: Int) {
   posts(options: { paginate: { page: $page, limit: $limit } }) {
     data {
@@ -10,5 +11,6 @@ query Posts($page: Int, $limit: Int) {
     meta {
       ...PageMetadata
     }
+
   }
 }

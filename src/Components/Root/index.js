@@ -26,21 +26,40 @@ function Root() {
   const [totalAmount, setTotalAmount] = useState(0)
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const { data, loading } = useQuery(postsQuery, { variables: { page, limit } })
+  const [totalPages, setTotalPages] = useState(0)
 
+  const { data, loading } = useQuery(postsQuery, { variables: { page, limit } })
+  const [postData, setPostData] = useState({ ...data })
+  console.log(data)
   useEffect(() => {
     setTotalAmount(data?.posts?.meta?.totalCount)
-  }, [data])
+    setTotalPages(setTotalAmount && calculateTotalPages(totalAmount, limit))
+  }, [])
+
+  function calculateTotalPages() {
+    return Math.ceil(+totalAmount / +limit)
+  }
+  // function getPagesArrey(pages) {
+  //   let result = []
+  //   for (let i = 0; i < pages; i + 1) {
+  //     result.push(i + 1)
+  //   }
+  //   console.log('res', result)
+  //   return result
+  // }
+
+  // const pagesArrey = getPagesArrey(totalPages)
+
+  // console.log(pagesArrey)
 
   function handlePrev() {
-    setPage(page - 1)
+    if (page !== 1) setPage(page - 1)
   }
   function handleNext() {
-    setPage(page + 1)
+    if (page !== totalPages) setPage(page + 1)
   }
 
-  console.log('totalAmount', totalAmount)
-  console.log('data', data)
+  console.log('postdata', postData)
 
   function handlePush() {
     setFields([{ name: faker.name.findName(), id: nanoid() }, ...fields])
@@ -62,7 +81,7 @@ function Root() {
           ? 'Loading...'
           : posts.map(post => (
               <Post mx={4} key={post.id} id={post.Id}>
-                <NavLink href={POST(post.id)} to={POST(post.id)}>
+                <NavLink href={POST(post.id, page)} to={POST(post.id, page)}>
                   {post.title}
                 </NavLink>
                 <h1>{post.id}</h1>
@@ -74,6 +93,11 @@ function Root() {
           <button type="button" onClick={handlePrev}>
             prev
           </button>
+
+          {/* <div>
+            {pagesArrey.length &&
+              pagesArrey.map(pages => <button type="button">{pages}</button>)}
+          </div> */}
           <button type="button" onClick={handleNext}>
             next
           </button>

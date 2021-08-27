@@ -6,6 +6,7 @@ import { useQuery } from '@apollo/client'
 import arrayMove from 'array-move'
 
 import postQuery from 'GraphQL/Queries/post.graphql'
+import postsQuery from 'GraphQL/Queries/posts.graphql'
 
 import { ROOT } from 'Router/routes'
 
@@ -29,10 +30,43 @@ const SortableItem = sortableElement(({ value }) => (
 
 function Post() {
   const [comments, setComments] = useState([])
+  const [limit, setLimit] = useState(10)
+
   const history = useHistory()
   const {
     params: { postId },
   } = useRouteMatch()
+
+  const {
+    params: { page },
+  } = useRouteMatch()
+
+  console.log(postId)
+
+  const posts = useQuery(postsQuery, {
+    variables: { page: +page, limit },
+  })
+
+  const [currentPosts, setCurrentPosts] = useState(posts?.data?.posts?.data)
+  const [currentIndex, setCurrentIndex] = useState(
+    currentPosts.findIndex(el => el.id == postId),
+  )
+  const [currentPostId, setCurrentPostId] = useState(postId)
+
+  useEffect(() => {
+    setCurrentPostId(currentPosts[currentIndex].id)
+  }, [currentIndex])
+
+  // console.log('currentPosts', currentPosts)
+  // console.log('currentIndex', currentIndex)
+  // console.log('currentPost id', currentPostId)
+
+  const handlePrev = () => {
+    if (currentIndex != 0) setCurrentIndex(currentIndex - 1)
+  }
+  const handleNext = () => {
+    if (currentIndex != limit - 1) setCurrentIndex(currentIndex + 1)
+  }
 
   const handleClick = () => history.push(ROOT)
 
@@ -40,7 +74,9 @@ function Post() {
     setComments(arrayMove(comments, newIndex, oldIndex))
   }
 
-  const { data, loading } = useQuery(postQuery, { variables: { id: postId } })
+  const { data, loading } = useQuery(postQuery, {
+    variables: { id: currentPostId || postId },
+  })
 
   const post = data?.post || {}
 
@@ -59,6 +95,14 @@ function Post() {
         <>
           <Column>
             <h4>Need to add next/previous links</h4>
+            <div>
+              <button type="button" onClick={handlePrev}>
+                prev
+              </button>
+              <button type="button" onClick={handleNext}>
+                next
+              </button>
+            </div>
             <PostContainer key={post.id}>
               <h3>{post.title}</h3>
               <PostAuthor>by {post.user.name}</PostAuthor>
