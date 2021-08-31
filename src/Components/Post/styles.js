@@ -55,3 +55,10 @@ export const Back = styled.div`
     text-decoration: underline;
   }
 `
+
+export const PaginationButtons = styled.div`
+  ${margin}
+`
+export const Button = styled.button`
+  ${margin}
+`

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { useQuery } from '@apollo/client'
@@ -9,7 +9,15 @@ import postsQuery from 'GraphQL/Queries/posts.graphql'
 
 import { POST } from 'Router/routes'
 
-import { Column, Container, Post, PostAuthor, PostBody } from './styles'
+import {
+  Column,
+  Container,
+  Post,
+  PostAuthor,
+  PostBody,
+  ActiveButton,
+  Pagination,
+} from './styles'
 
 import ExpensiveTree from '../ExpensiveTree'
 
@@ -27,30 +35,26 @@ function Root() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [totalPages, setTotalPages] = useState(0)
-
   const { data, loading } = useQuery(postsQuery, { variables: { page, limit } })
-  const [postData, setPostData] = useState({ ...data })
-  console.log(data)
+  const [result, setResult] = useState([])
+
   useEffect(() => {
     setTotalAmount(data?.posts?.meta?.totalCount)
-    setTotalPages(setTotalAmount && calculateTotalPages(totalAmount, limit))
-  }, [])
+  }, [data])
+
+  useEffect(() => {
+    setTotalPages(calculateTotalPages(+totalAmount, +limit))
+  }, [totalAmount])
+
+  const pagesArrey = n => Array.from({ length: n }, (v, k) => k + 1)
+
+  useEffect(() => {
+    setResult(pagesArrey(totalPages))
+  }, [totalPages])
 
   function calculateTotalPages() {
     return Math.ceil(+totalAmount / +limit)
   }
-  // function getPagesArrey(pages) {
-  //   let result = []
-  //   for (let i = 0; i < pages; i + 1) {
-  //     result.push(i + 1)
-  //   }
-  //   console.log('res', result)
-  //   return result
-  // }
-
-  // const pagesArrey = getPagesArrey(totalPages)
-
-  // console.log(pagesArrey)
 
   function handlePrev() {
     if (page !== 1) setPage(page - 1)
@@ -58,8 +62,6 @@ function Root() {
   function handleNext() {
     if (page !== totalPages) setPage(page + 1)
   }
-
-  console.log('postdata', postData)
 
   function handlePush() {
     setFields([{ name: faker.name.findName(), id: nanoid() }, ...fields])
@@ -69,6 +71,10 @@ function Root() {
     setTimeout(() => {
       alert(`You clicked ${count} times`)
     }, 2500)
+  }
+
+  const handleChangePage = targetPage => {
+    setPage(targetPage)
   }
 
   const posts = data?.posts.data || []
@@ -81,7 +87,7 @@ function Root() {
           ? 'Loading...'
           : posts.map(post => (
               <Post mx={4} key={post.id} id={post.Id}>
-                <NavLink href={POST(post.id, page)} to={POST(post.id, page)}>
+                <NavLink href={POST(post.id)} to={POST(post.id)}>
                   {post.title}
                 </NavLink>
                 <h1>{post.id}</h1>
@@ -89,19 +95,34 @@ function Root() {
                 <PostBody>{post.body}</PostBody>
               </Post>
             ))}
-        <div>
-          <button type="button" onClick={handlePrev}>
-            prev
-          </button>
+        {!loading && (
+          <div>
+            <Pagination type="button" onClick={handlePrev}>
+              {'<'}
+            </Pagination>
 
-          {/* <div>
-            {pagesArrey.length &&
-              pagesArrey.map(pages => <button type="button">{pages}</button>)}
-          </div> */}
-          <button type="button" onClick={handleNext}>
-            next
-          </button>
-        </div>
+            {result.length &&
+              result.map(pages =>
+                pages !== page ? (
+                  <Pagination
+                    key={pages}
+                    type="button"
+                    onClick={() => handleChangePage(pages)}
+                  >
+                    {pages}
+                  </Pagination>
+                ) : (
+                  <ActiveButton my={4} key={pages}>
+                    {pages}
+                  </ActiveButton>
+                ),
+              )}
+
+            <button type="button" onClick={handleNext}>
+              {'>'}
+            </button>
+          </div>
+        )}
       </Column>
       <Column>
         <h4>Slow rendering</h4>

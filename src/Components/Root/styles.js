@@ -40,3 +40,15 @@ export const PostBody = styled.div`
   overflow: hidden;
   white-space: normal;
 `
+
+export const Pagination = styled.button`
+  cursor: pointer;
+`
+
+export const ActiveButton = styled.button`
+  cursor: pointer;
+  background: red;
+  marginbottom: 16px;
+  color: #fff;
+  ${margin}
+`
