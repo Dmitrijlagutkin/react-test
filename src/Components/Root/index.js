@@ -90,7 +90,6 @@ function Root() {
                 <NavLink href={POST(post.id)} to={POST(post.id)}>
                   {post.title}
                 </NavLink>
-                <h1>{post.id}</h1>
                 <PostAuthor>by {post.user.name}</PostAuthor>
                 <PostBody>{post.body}</PostBody>
               </Post>
